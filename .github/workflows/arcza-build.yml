@@ -19,15 +19,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            platform: linux-x64
-            executable: arcza
           - os: windows-latest
             platform: windows-x64
             executable: arcza.exe
-          - os: macos-latest
-            platform: macos-arm64
-            executable: arcza
     defaults:
       run:
         shell: bash

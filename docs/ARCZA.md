@@ -30,8 +30,8 @@ Enable Actions in the fork and allow GitHub Actions to create pull requests in
 the PR to trigger checks. Merge conflicts require manual resolution.
 
 The **ArcZa Build** workflow runs on pushes and pull requests to `main`, or
-manually, on Windows x64, Linux x64, and macOS ARM64. Download the matching
-`arcza-*` artifact from a successful Actions run. Artifacts expire after 14 days;
+manually, on Windows x64 only. Download the
+`arcza-windows-x64-*` artifact from a successful Actions run. Artifacts expire after 14 days;
 they are development builds, not signed installers or qualified releases.
 The smoke check executes `--help` with a rejecting runtime guard. It does not
 replace upstream tests, lint, compatibility, or browser acceptance checks.
@@ -39,15 +39,14 @@ replace upstream tests, lint, compatibility, or browser acceptance checks.
 For a local build, install the Go version required by `go.mod` and Node.js
 22.18+ or 24+. From the repository root:
 
-```bash
+```powershell
 npm --prefix web ci
 npm --prefix web run build
-go build -trimpath -o arcza ./cmd/waza
-./arcza --help
+go build -trimpath -o arcza.exe ./cmd/waza
+.\arcza.exe --help
 ```
 
-On Windows, use `-o arcza.exe` and run `.\arcza.exe --help`. CLI help still
-uses the upstream Waza command name. Dashboard builds rewrite the tracked
+CLI help still uses the upstream Waza command name. Dashboard builds rewrite the tracked
 `web/dist/index.html`; inspect that diff and preserve existing local edits.
 Do not commit unrelated generated entrypoint changes.
 
