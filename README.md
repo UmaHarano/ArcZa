@@ -1,4 +1,16 @@
-# Waza
+# ArcZa
+
+ArcZa is Uma Harano's independently maintained fork of
+[Microsoft Waza](https://github.com/microsoft/waza). The upstream MIT license
+and copyright notice are retained in [LICENSE](LICENSE). ArcZa is not an
+official Microsoft distribution.
+
+See [the ArcZa maintenance guide](docs/ARCZA.md) for builds, upstream updates,
+and the boundaries of the initial rebranding. The upstream documentation below
+is retained as a compatibility reference; its installation links install Waza,
+not ArcZa.
+
+## Upstream Waza Reference
 
 A Go CLI for evaluating agent workflows, skills, and custom agents — author repository, CLI, and MCP scenarios, run graded trials, and inspect the evidence.
 

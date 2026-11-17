@@ -1,0 +1,71 @@
+name: ArcZa Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.repository == 'UmaHarano/ArcZa'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+            executable: arcza
+          - os: windows-latest
+            platform: windows-x64
+            executable: arcza.exe
+          - os: macos-latest
+            platform: macos-arm64
+            executable: arcza
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build embedded dashboard
+        run: |
+          npm --prefix web ci
+          npm --prefix web run build
+      - name: Build ArcZa executable
+        env:
+          EXECUTABLE: ${{ matrix.executable }}
+        run: |
+          mkdir -p arcza-package
+          go build -trimpath -o "arcza-package/$EXECUTABLE" ./cmd/waza
+          cp LICENSE docs/ARCZA.md arcza-package/
+      - name: Smoke test without live runtime
+        env:
+          EXECUTABLE: ${{ matrix.executable }}
+        run: |
+          offline_env="$(bash .github/scripts/go_offline_env.sh)"
+          while IFS= read -r setting; do export "$setting"; done <<< "$offline_env"
+          "./arcza-package/$EXECUTABLE" --help
+          if [ -e "$COPILOT_CLI_PATH.invoked" ]; then
+            echo 'Unexpected Copilot runtime launch' >&2
+            exit 1
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: arcza-${{ matrix.platform }}-${{ github.sha }}
+          path: arcza-package/
+          if-no-files-found: error
+          retention-days: 14
