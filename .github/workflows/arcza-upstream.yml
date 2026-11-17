@@ -19,23 +19,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Open upstream update pull request when needed
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.ARCZA_SYNC_TOKEN || github.token }}
+      - name: Test updater safeguards
+        run: bash .github/scripts/arcza-upstream.test.sh
+      - name: Propose update and enable guarded auto-merge
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.ARCZA_SYNC_TOKEN }}
           GH_REPO: ${{ github.repository }}
         shell: bash
-        run: |
-          set -euo pipefail
-          existing="$(gh api --method GET "repos/$GH_REPO/pulls" -f state=open -f base=main -f head=microsoft:main --jq '.[0].html_url // empty')"
-          if [ -n "$existing" ]; then
-            echo "Upstream update PR already open: $existing" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          ahead="$(gh api 'repos/UmaHarano/ArcZa/compare/main...microsoft:main' --jq '.ahead_by')"
-          if [ "$ahead" -eq 0 ]; then
-            echo 'No new upstream commits.' >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          gh api --method POST "repos/$GH_REPO/pulls" -f base=main -f head=microsoft:main \
-            -f title='Update ArcZa from Microsoft Waza' \
-            -f body='Proposed upstream changes from microsoft/waza main. Review the complete diff, resolve conflicts while preserving ArcZa customizations, and run all applicable checks before merging. This PR tracks the moving upstream main branch. GitHub token-created PRs may require a maintainer to close and reopen the PR to trigger checks. Do not merge without current-head validation. No automatic merge is configured.'
+        run: bash .github/scripts/arcza-upstream.sh

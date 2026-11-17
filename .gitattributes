@@ -5,6 +5,7 @@
 .squad/orchestration-log/** merge=union
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
+.github/scripts/arcza-upstream*.sh text eol=lf
 # Squad commits hash these exact bytes; Windows checkout must retain LF.
 .squad/casting/registry.json text eol=lf
 .squad/casting/history.json text eol=lf
